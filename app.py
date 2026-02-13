@@ -11,7 +11,7 @@ if "GEMINI_API_KEY" not in st.secrets:
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 model = genai.GenerativeModel(MODEL_NAME)
 
-st.set_page_config(page_title="Kita-Simulator: Lukas", page_icon="🧒")
+st.set_page_config(page_title="Lukas", page_icon="🧒")
 
 # --- 2. INITIALISIERUNG ---
 if "messages" not in st.session_state:
@@ -24,7 +24,7 @@ if "solved" not in st.session_state:
     st.session_state.solved = False
 
 # --- 3. UI LAYOUT ---
-st.title("Kita-Simulator: Lukas (4 J.)")
+st.title("Lukas (4)")
 
 # Erfolgskasten, wenn das Ziel erreicht ist
 if st.session_state.solved:
@@ -39,7 +39,7 @@ if st.session_state.solved:
         st.rerun()
 else:
     # Fortschrittsanzeige während des Spiels
-    progress_dots = "🔵" * st.session_state.sst_counter + "⚪" * (4 - st.session_state.sst_counter)
+    progress_dots = "🟢" * st.session_state.sst_counter + "⚪" * (4 - st.session_state.sst_counter)
     st.markdown(f"**Dein Dialog-Fortschritt:** {progress_dots}")
 
 # HILFE-BOX: Erscheint erst nach 6 Fehlversuchen
@@ -100,3 +100,4 @@ if not st.session_state.solved:
 if st.sidebar.button("Simulation hart zurücksetzen"):
     st.session_state.clear()
     st.rerun()
+
