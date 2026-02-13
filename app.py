@@ -11,7 +11,15 @@ if "GEMINI_API_KEY" not in st.secrets:
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 model = genai.GenerativeModel(MODEL_NAME)
 
-st.set_page_config(page_title="Lukas", page_icon="🧒")
+st.set_page_config(page_title="Kita-Simulator: Lukas", page_icon="🧒")
+
+# --- CSS FÜR GRÜNE FARBEN ---
+st.markdown("""
+    <style>
+    .stSuccess { background-color: #e8f5e9; border-color: #4caf50; color: #2e7d32; }
+    .sst-dots { font-size: 24px; color: #4caf50; margin-bottom: 10px; }
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- 2. INITIALISIERUNG ---
 if "messages" not in st.session_state:
@@ -24,15 +32,19 @@ if "solved" not in st.session_state:
     st.session_state.solved = False
 
 # --- 3. UI LAYOUT ---
-st.title("Lukas (4)")
+st.title("Kita-Simulator: Lukas (4 J.)")
 
-# Erfolgskasten, wenn das Ziel erreicht ist
+# DER "BOMBENSICHERE" CHECK: Wenn 4 Punkte erreicht sind, ist gelöst!
+if st.session_state.sst_counter >= 4:
+    st.session_state.solved = True
+
+# Erfolgskasten anzeigen
 if st.session_state.solved:
     st.success("""
     ### 🎉 Ziel erreicht! 
     Du hast Lukas erfolgreich in einen tiefen Dialog verwickelt. Durch deine offenen Impulse konntet ihr **gemeinsam nachdenken (SST)**. 
     
-    **Dein Codewort für das Handout:** ## GEMEINSAM-DENKEN
+    **Dein Codewort für das Handout:** # GEMEINSAM-DENKEN
     """)
     if st.button("Nochmal spielen"):
         st.session_state.clear()
@@ -40,15 +52,11 @@ if st.session_state.solved:
 else:
     # Fortschrittsanzeige während des Spiels
     progress_dots = "🟢" * st.session_state.sst_counter + "⚪" * (4 - st.session_state.sst_counter)
-    st.markdown(f"**Dein Dialog-Fortschritt:** {progress_dots}")
+    st.markdown(f"<div class='sst-dots'>Fortschritt: {progress_dots}</div>", unsafe_allow_html=True)
 
-# HILFE-BOX: Erscheint erst nach 6 Fehlversuchen
+# HILFE-BOX
 if st.session_state.patience <= 0 and not st.session_state.solved:
-    st.info("""
-    **💡 Pädagogischer Tipp:** Lukas blockt ab. Er fühlt sich durch zu viele Fragen "geprüft".
-    Versuche es mit **Sustained Shared Thinking (SST)**. Nutze offene Impulse statt Fragen: 
-    * *"Ich frage mich, ob dein Turm auch einen Geheimgang hat..."* * *"Erzähl mal, wie du das gebaut hast..."*
-    """)
+    st.info("**💡 Pädagogischer Tipp:** Lukas fühlt sich durch Fragen 'geprüft'. Versuche es mit einem Impuls wie: *'Ich frage mich, ob...' / 'Erzähl mal...'**")
 
 # Chat-Verlauf
 for msg in st.session_state.messages:
@@ -56,7 +64,6 @@ for msg in st.session_state.messages:
         st.markdown(msg["content"])
 
 # --- 4. LOGIK ---
-# Eingabefeld verschwindet, wenn gelöst
 if not st.session_state.solved:
     if prompt := st.chat_input("Was sagst du zu Lukas?"):
         st.session_state.messages.append({"role": "user", "content": prompt})
@@ -64,21 +71,21 @@ if not st.session_state.solved:
             st.markdown(prompt)
 
         system_prompt = f"""
-        Du bist Lukas (4 Jahre). Du baust ein Turm-Haus aus Holzklötzen.
+        Du bist Lukas (4 Jahre). Du baust ein Turm-Haus.
         STAND: {st.session_state.sst_counter}/4 SST-Punkte. GEDULD: {st.session_state.patience}.
-
         REGELN:
         1. Sei ein 4-jähriges Kind. Wenn Geduld <= 0, sei genervt.
-        2. Bei GESCHLOSSENEN FRAGEN: Antworte kurz. Schreibe '[PATIENCE-DOWN]'.
-        3. Bei OFFENEN SST-IMPULSEN: Sei begeistert. Schreibe '[SST-UP]' und '[PATIENCE-RESET]'.
-        4. Wenn COUNTER = 4 erreicht ist, sagst du: "Das hat Spaß gemacht! Du bist ein Dialog-Profi." und fügst das Wort 'GEMEINSAM-DENKEN' ein.
+        2. Bei GESCHLOSSENEN FRAGEN (Wissensabfrage): Antworte kurz. Schreibe '[PATIENCE-DOWN]'.
+        3. Bei OFFENEN SST-IMPULSEN (Mitdenken): Sei begeistert. Schreibe '[SST-UP]' und '[PATIENCE-RESET]'.
+        4. Sobald der 4. Punkt erreicht ist (COUNTER=4), verabschiede dich nett, weil dein Turm fertig ist.
         """
 
         with st.spinner("Lukas spielt..."):
             try:
                 response = model.generate_content(system_prompt + "\nUser: " + prompt)
                 text = response.text
-
+                
+                # Logik-Tags auswerten
                 if "[PATIENCE-DOWN]" in text:
                     st.session_state.patience -= 1
                     text = text.replace("[PATIENCE-DOWN]", "").strip()
@@ -89,15 +96,11 @@ if not st.session_state.solved:
                     st.session_state.sst_counter += 1
                     text = text.replace("[SST-UP]", "").strip()
 
-                if "GEMEINSAM-DENKEN" in text:
-                    st.session_state.solved = True
-
                 st.session_state.messages.append({"role": "assistant", "content": text})
                 st.rerun()
             except Exception:
-                st.warning("Kurze Pause nötig. Gleich nochmal versuchen!")
+                st.warning("Lukas macht kurz Pause. Bitte gleich nochmal senden.")
 
-if st.sidebar.button("Simulation hart zurücksetzen"):
+if st.sidebar.button("Simulation zurücksetzen"):
     st.session_state.clear()
     st.rerun()
-
