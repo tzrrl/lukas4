@@ -26,7 +26,7 @@ if "solved" not in st.session_state:
     st.session_state.solved = False
 
 # --- 3. UI ---
-st.title("Kita-Simulator: Lukas (4 J.)")
+st.title("Lukas (4 J.)")
 # Die Trainer-Übersicht wurde entfernt für maximale Immersion.
 
 # Chat-Verlauf
@@ -84,4 +84,5 @@ if prompt := st.chat_input("Was sagst du zu Lukas?"):
 # Reset-Funktion (versteckt ganz unten)
 if st.sidebar.button("Simulation Neustarten"):
     st.session_state.clear()
+
     st.rerun()
