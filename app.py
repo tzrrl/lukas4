@@ -32,15 +32,15 @@ if "solved" not in st.session_state:
     st.session_state.solved = False
 
 # --- 3. UI LAYOUT ---
-st.title("Kita-Simulator: Lukas (4 J.)")
+st.title("Lukas (4 J.)")
 
 # Fortschrittsanzeige (Scrollt normal mit)
-display_dots = min(st.session_state.sst_counter, 4)
-progress_dots = "🟢" * display_dots + "⚪" * (4 - display_dots)
+display_dots = min(st.session_state.sst_counter, 5)
+progress_dots = "🟢" * display_dots + "⚪" * (5 - display_dots)
 st.markdown(f"<div class='sst-dots'>Dialog-Fortschritt: {progress_dots}</div>", unsafe_allow_html=True)
 
 # Erfolgskasten
-if st.session_state.sst_counter >= 4:
+if st.session_state.sst_counter >= 5:
     st.session_state.solved = True
     st.success("""
     ### 🎉 Ziel erreicht! 
@@ -98,3 +98,4 @@ if not st.session_state.solved:
 if st.sidebar.button("Hard Reset"):
     st.session_state.clear()
     st.rerun()
+
